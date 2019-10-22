@@ -21,7 +21,7 @@ services:
     command: /bin/bash -c "envsubst \$$FASTCGI_READ_TIMEOUT < /etc/nginx/conf.d/mysite.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
 
   drupal:
-    image: greased:drupal-migration
+    image: greased/drupal:drupal-migration
     build: .
     networks:
       - middle
@@ -31,6 +31,8 @@ services:
       - ./web/themes/custom/:/app/web/themes/custom/
       - ./web/profiles/custom/:/app/web/profiles/custom/
       - ./scripts:/app/scripts
+      - ./composer.json:/app/composer.json
+      - ./composer.lock:/app/composer.lock
       - src:/app/web
 
   db:
