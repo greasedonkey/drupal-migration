@@ -1,0 +1,53 @@
+version: '3'
+services:
+
+  nginx:
+    image: nginx
+    networks:
+      - front
+      - middle
+    ports:
+      - 8080:80
+    depends_on:
+      - drupal
+    volumes:
+      - ./web/modules/custom/:/app/web/modules/custom/
+      - ./web/themes/custom/:/app/web/themes/custom/
+      - ./web/profiles/custom/:/app/web/profiles/custom/
+      - ./default.conf:/etc/nginx/conf.d/mysite.template
+      - src:/app/web:ro
+    environment:
+      FASTCGI_READ_TIMEOUT: 60
+    command: /bin/bash -c "envsubst \$$FASTCGI_READ_TIMEOUT < /etc/nginx/conf.d/mysite.template > /etc/nginx/conf.d/default.conf && exec nginx -g 'daemon off;'"
+
+  drupal:
+    image: greased:drupal-migration
+    build: .
+    networks:
+      - middle
+      - back
+    volumes:
+      - ./web/modules/custom/:/app/web/modules/custom/
+      - ./web/themes/custom/:/app/web/themes/custom/
+      - ./web/profiles/custom/:/app/web/profiles/custom/
+      - ./scripts:/app/scripts
+      - src:/app/web
+
+  db:
+    image: mysql
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: complexpassword
+    networks:
+      - back
+    volumes:
+      - data:/var/lib/mysql
+
+networks:
+  front:
+  middle:
+  back:
+
+volumes:
+  src:
+  data:
